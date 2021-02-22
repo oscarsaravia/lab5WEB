@@ -1,0 +1,224 @@
+<html>
+  <head>
+  </head>
+  <body>
+    <script type="application/javascript">
+    
+
+    function AutoRefresh( t ) {
+        localStorage.setItem('scroll', document.body.scrollTop)
+        setTimeout("location.reload(true);", t);
+    }
+
+    function gou (){
+        
+        console.log(localStorage.getItem('scroll'))
+    }
+
+    document.body.onload = AutoRefresh(5000)
+
+    
+    
+
+
+  if (localStorage.getItem('nombre') === null){
+    console.log('vacio')
+    const personName = prompt("Ingrese su nombre:", "Oscar Saravia")
+    localStorage.setItem('nombre', personName)
+  }  
+  
+
+      
+      const time = new Date().toJSON().slice(0,10).replace(/-/g,'-')
+      const listaMensajes = document.createElement('ul')
+      const chatBox = document.createElement('input')
+      const send = document.createElement('img')
+      const mensajes = document.createElement('div')
+      const general = document.createElement('h1')
+      const logo = document.createElement('img')
+
+      
+      logo.src = ('https://logos-marcas.com/wp-content/uploads/2020/11/Discord-Simbolo.png')
+      logo.style.height = '40px'
+      logo.style.width = '70px'
+      logo.style.position = 'fixed'
+      general.append('# general')
+      general.style.color = 'white'
+      general.style.position = 'relative'
+      general.style.left = '25% '
+      document.body.style.backgroundColor = '#303136'
+
+      // send button css
+      send.src = 'https://www.searchpng.com/wp-content/uploads/2019/02/Send-Icon-PNG-1.png'
+      send.style.height = '50px'
+      send.style.width = '50px'
+      send.style.position = 'fixed'
+      send.style.bottom = '15px'
+      send.style.left = '63%'
+
+      
+
+      // input css
+      chatBox.style.height = '50px'
+      chatBox.style.width = '500px'
+      chatBox.style.borderRadius = '5px'
+      chatBox.style.border = '1px solid black'
+      chatBox.style.position = 'fixed'
+      chatBox.style.bottom = '15px'
+      chatBox.style.left = '50%'
+      chatBox.style.transform = 'translateX(-50%)'
+      chatBox.style.zIndex = '0'
+
+
+      // caja de los mensajes css
+      mensajes.style.minHeight = '100vh'
+      mensajes.style.width = '800px'
+      mensajes.style.backgroundColor = '#35383d'
+      mensajes.style.position = 'absolute'
+      mensajes.style.top = '80px'
+      mensajes.style.paddingBottom = '75px'
+      mensajes.style.left = '50%'
+      mensajes.style.zIndex = '-1'
+      mensajes.style.transform = 'translateX(-50%)'
+
+      document.body.append(logo)
+      document.body.append(general)
+      document.body.append(chatBox)
+      document.body.append(send)
+      document.body.append(mensajes)
+      drawMessages()
+      mensajes.append(listaMensajes)
+
+      
+
+    
+    
+      function drawMessages (){
+          console.log("SCROLL: ", localStorage.getItem('scroll'))
+        document.body.scrollTo(0, localStorage.getItem('scroll'))
+            fetch('http://ubeje.xyz:3000/messages').then((r) =>{
+            return r.json()
+            }).then((j) => {
+                j.forEach(mensaje => {
+
+                    const imagen = document.createElement('img')
+                    imagen.src = "https://avatars.dicebear.com/4.5/api/male/" + mensaje.sender +".svg"
+                    imagen.style.height = '35px';
+                    imagen.style.width = '35px'; 
+                    //mensajes.append(imagen)
+                    
+
+                    const messageElement = document.createElement('li')
+                    const emisor = document.createElement('h3')
+                    const contenido = document.createElement('h3')
+                    const fecha = document.createElement('p')
+
+                    emisor.append(imagen)
+                    fecha.style.display = 'inline-block'
+                    emisor.append(mensaje.sender)
+                    emisor.append('       ')
+                    fecha.append(mensaje.date)
+                    fecha.style.fontSize = '15px'
+                    emisor.append(fecha)
+                    emisor.style.color = '#939694'
+                    emisor.style.fontWeight = 'bold'
+                    emisor.style.fontFamily = 'Whitney'
+                    emisor.style.fontSize = '30px'
+                    const boole = checkURL(mensaje.message)
+                    if (mensaje.message != undefined){
+                    console.log(boole)
+                    if (boole === true){
+                        const imgurl = document.createElement('img')
+                        imgurl.src = mensaje.message
+                        imgurl.style.width = '500px'
+                        imgurl.style.height = '500px'
+                        contenido.append(imgurl)
+                    }else{
+                        contenido.append(mensaje.message)
+                    }
+                    }
+
+                    
+
+                    messageElement.append(emisor)
+                    messageElement.style.color = 'white'
+                    messageElement.style.fontFamily = 'Roboto'
+                    messageElement.style.fontSize = '25px'
+                    messageElement.append(contenido)
+                    
+
+                    listaMensajes.append(messageElement)
+                    document.body.scrollTo(0, 999999)
+
+                });
+            })
+        }
+
+        chatBox.addEventListener('keydown', (event) => {
+
+            if (event.key === 'Enter' && chatBox.value != ""){
+                if (chatBox.value.length>140){
+                    alert("NO SE PUEDE ENVIAR EL MENSAJE, MAXIMO 140 CARACTERES")
+                } else{
+                    
+                    //localStorage.setItem('savescroll', document.body.scrollTop)
+                    fetch('http://ubeje.xyz:3000/messages',{
+                    method: 'POST',
+                    headers:{
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        sender: localStorage.getItem('nombre'),
+                        message: chatBox.value,
+                        date: time
+                    })
+                    }).then((k)=> {
+                        listaMensajes.innerHTML = ''
+                        //drawMessages()
+                        
+                    }).then((q) => {
+                        document.body.scroll(0, localStorage.getItem('savescroll'))
+                    })
+                    chatBox.value = ""
+                    }
+            }
+            
+        })
+
+        send.addEventListener('click', () => {
+            if (chatBox.value.length>140){
+                alert("NO SE PUEDE ENVIAR EL MENSAJE, MAXIMO 140 CARACTERES")
+            } else{
+                fetch('http://ubeje.xyz:3000/messages',{
+                method: 'POST',
+                headers:{
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    sender: localStorage.getItem('nombre'),
+                    message: chatBox.value,
+                    date: time
+                })
+            }).then((y) => {
+                listaMensajes.innerHTML = ''
+                //drawMessages()
+            }).then((w)=> {
+                document.body.scroll(0, 999999)
+            })
+                chatBox.value=""
+            }
+
+        })
+
+        function checkURL(url) {
+            if (url != undefined){
+                return(url.match(/\.(jpeg|jpg|gif|png)$/) != null);
+            }
+            
+        }
+        //const abc = toString(url)
+    
+
+    </script>
+  </body>
+</html>
